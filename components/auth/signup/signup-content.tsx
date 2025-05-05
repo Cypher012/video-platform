@@ -10,7 +10,6 @@ import { EmailForm } from './email-form';
 
 export function SignupContent({ closeModal }: { closeModal: () => void }) {
   const [showEmailForm, setShowEmailForm] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
 
   return (
     <>
@@ -25,17 +24,13 @@ export function SignupContent({ closeModal }: { closeModal: () => void }) {
           Join HotConnect to start connecting with hot performers
         </DialogDescription>
       </DialogHeader>
-      {!verificationSent ? (
-        !showEmailForm ? (
-          <OAuthOptions onEmailClick={() => setShowEmailForm(true)} />
-        ) : (
-          <EmailForm
-            setVerificationSent={setVerificationSent}
-            closeEmailForm={() => setShowEmailForm(false)}
-          />
-        )
+      {!showEmailForm ? (
+        <OAuthOptions onEmailClick={() => setShowEmailForm(true)} />
       ) : (
-        <p className="text-center text-rose-100">Verification step here</p>
+        <EmailForm
+          closeModal={closeModal}
+          closeEmailForm={() => setShowEmailForm(false)}
+        />
       )}
     </>
   );

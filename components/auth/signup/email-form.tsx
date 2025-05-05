@@ -1,9 +1,17 @@
-// components/signup/EmailForm.tsx
 'use client';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import {
+  useState,
+  Dispatch,
+  SetStateAction,
+  useActionState,
+  useEffect,
+} from 'react';
+import { signupSchema, SignupInput } from '@/lib/validations/auth';
+import { signUp } from '@/lib/actions/auth-action';
+import type { State } from '@/lib/actions/auth-action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +22,6 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { signupSchema, SignupInput } from '@/lib/validations/auth';
-import { useState, Dispatch, SetStateAction } from 'react';
 import { Mail, User, Eye, EyeOff } from 'lucide-react';
 import {
   Select,
@@ -25,19 +31,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useSignupStore } from '@/store/signup-store';
 
 interface EmailFormProps {
-  setVerificationSent: Dispatch<SetStateAction<boolean>>;
-  closeEmailForm: () => void;
-  setShowEmailForm: (val: boolean) => void;
+  closeEmailForm: (success: boolean) => void;
+  closeModal: () => void;
 }
 
-export function EmailForm({
-  setVerificationSent,
-  closeEmailForm,
-  setShowEmailForm,
-}: EmailFormProps) {
+export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const { setVerificationModal, verificationModal, setEmail } =
+    useSignupStore();
+  const initialState: State = {
+    errorMessage: '',
+    validationErrors: {},
+    success: false,
+  };
+
+  const [state, formAction, isPending] = useActionState(signUp, initialState);
 
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -51,21 +62,49 @@ export function EmailForm({
     },
   });
 
-  const onSubmit = (data: SignupInput) => {
-    console.log('Signup form:', data);
-    // Handle API call here
-  };
+  // Optional: Handle server error display (if returned from server action)
+  useEffect(() => {
+    console.log(state);
+    if (state?.errorMessage) {
+      form.setError('email', {
+        type: 'server',
+        message: state.errorMessage,
+      });
+    }
+  }, [state, form]);
 
+  useEffect(() => {
+    console.log('verificationModal', verificationModal);
+    if (state.success) {
+      setEmail(form.getValues('email'));
+      closeEmailForm(true);
+      closeModal();
+      setVerificationModal(true);
+    }
+  }, [state.success, closeEmailForm, setVerificationModal]);
+
+  useEffect(() => {
+    console.log('Dialog should open:', verificationModal);
+  }, [verificationModal]);
+
+  const disabled =
+    !form.watch('agreeTerms') ||
+    !form.watch('isAdult') ||
+    isPending ||
+    !form.watch('accountType') ||
+    !form.watch('name') ||
+    !form.watch('email') ||
+    !form.watch('password');
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+      <form action={formAction} className="space-y-4 pt-4">
         <FormField
           control={form.control}
-          name="fullName"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <Label
-                htmlFor="fullName"
+                htmlFor="name"
                 className="text-sm font-medium text-rose-100"
               >
                 Display Name
@@ -74,7 +113,7 @@ export function EmailForm({
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-rose-500" />
                   <Input
-                    id="fullName"
+                    id="name"
                     placeholder="HotUser69"
                     {...field}
                     className="pl-10 bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
@@ -172,6 +211,11 @@ export function EmailForm({
               >
                 Account Type
               </Label>
+              <Input
+                type="hidden"
+                name="accountType"
+                value={field.value ?? ''}
+              />
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="bg-rose-950/20 border-rose-500/30 text-white focus:ring-rose-500">
@@ -210,6 +254,11 @@ export function EmailForm({
               >
                 I confirm that I am at least 18 years old
               </Label>
+              <input
+                type="hidden"
+                name="isAdult"
+                value={field.value ? 'true' : ''}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -248,6 +297,11 @@ export function EmailForm({
                   Privacy Policy
                 </Button>
               </Label>
+              <input
+                type="hidden"
+                name="agreeTerms"
+                value={field.value ? 'true' : ''}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -256,15 +310,15 @@ export function EmailForm({
         <Button
           type="submit"
           className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 shadow-glow-sm"
-          disabled={!form.watch('agreeTerms') || !form.watch('isAdult')}
+          disabled={disabled}
         >
-          Create Account
+          {isPending ? 'Creating account...' : 'Create Account'}
         </Button>
         <Button
           type="button"
           variant="ghost"
           className="w-full text-rose-400 hover:text-rose-300"
-          onClick={() => setShowEmailForm(false)}
+          onClick={() => closeEmailForm(false)}
         >
           Go Back
         </Button>

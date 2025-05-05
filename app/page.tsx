@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LoginModal } from '@/components/login-modal';
-import { SignupModal } from '@/components/signup/signup-modal';
+import { LoginModal } from '@/components/auth/login-modal';
+import { SignupModal } from '@/components/auth/signup/signup-modal';
 import { Heart, Users, Flame, Star, ChevronRight } from 'lucide-react';
 import { ModelCard } from '@/components/model-card';
 import { ModelCarousel } from '@/components/model-carousel';
 import { FeaturedModel } from '@/components/featured-model';
 import { TestimonialCarousel } from '@/components/testimonial-carousel';
+import { AuthComponent } from '@/components/auth/auth-component';
 
 export default function Home() {
   return (
@@ -53,10 +54,7 @@ export default function Home() {
               Pricing
             </Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <LoginModal />
-            <SignupModal />
-          </div>
+          <AuthComponent />
         </div>
       </header>
 
