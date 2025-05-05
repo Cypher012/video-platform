@@ -16,93 +16,257 @@ import {
 } from '@/components/ui/form';
 import { signupSchema, SignupInput } from '@/lib/validations/auth';
 import { useState, Dispatch, SetStateAction } from 'react';
+import { Mail, User, Eye, EyeOff } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface EmailFormProps {
   setVerificationSent: Dispatch<SetStateAction<boolean>>;
   closeEmailForm: () => void;
+  setShowEmailForm: (val: boolean) => void;
 }
 
 export function EmailForm({
   setVerificationSent,
   closeEmailForm,
+  setShowEmailForm,
 }: EmailFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: '',
       email: '',
       password: '',
+      accountType: undefined,
+      isAdult: false,
+      agreeTerms: false,
     },
   });
 
-  const [loading, setLoading] = useState(false);
-
-  const onSubmit = async (data: SignupInput) => {
-    setLoading(true);
-    try {
-      // TODO: handle signup logic (API call, etc.)
-      console.log('Signup data:', data);
-    } catch (error) {
-      console.error('Signup error', error);
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = (data: SignupInput) => {
+    console.log('Signup form:', data);
+    // Handle API call here
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <FormField
           control={form.control}
-          name="name"
+          name="fullName"
           render={({ field }) => (
             <FormItem>
-              <Label htmlFor="name">Name</Label>
+              <Label
+                htmlFor="fullName"
+                className="text-sm font-medium text-rose-100"
+              >
+                Display Name
+              </Label>
               <FormControl>
-                <Input id="name" placeholder="John Doe" {...field} />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-rose-500" />
+                  <Input
+                    id="fullName"
+                    placeholder="HotUser69"
+                    {...field}
+                    className="pl-10 bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <Label htmlFor="email">Email</Label>
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-rose-100"
+              >
+                Email
+              </Label>
               <FormControl>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  {...field}
-                />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-rose-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    {...field}
+                    className="pl-10 bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
             <FormItem>
-              <Label htmlFor="password">Password</Label>
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-rose-100"
+              >
+                Password
+              </Label>
               <FormControl>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  {...field}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    {...field}
+                    className="bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 text-rose-400 hover:text-rose-300"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? 'Hide password' : 'Show password'}
+                    </span>
+                  </Button>
+                </div>
               </FormControl>
+              <p className="text-xs text-rose-100/50">
+                Password must be at least 8 characters with a number and special
+                character
+              </p>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Signing up...' : 'Create account'}
+
+        <FormField
+          control={form.control}
+          name="accountType"
+          render={({ field }) => (
+            <FormItem>
+              <Label
+                htmlFor="accountType"
+                className="text-sm font-medium text-rose-100"
+              >
+                Account Type
+              </Label>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="bg-rose-950/20 border-rose-500/30 text-white focus:ring-rose-500">
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-black border border-rose-500/30">
+                  <SelectItem value="client" className="text-rose-100">
+                    Client - I want to book sessions
+                  </SelectItem>
+                  <SelectItem value="performer" className="text-rose-100">
+                    Performer - I want to offer services
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="isAdult"
+          render={({ field }) => (
+            <FormItem className="flex items-start space-x-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked)}
+                  className="mt-1 border-rose-500/30 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
+                />
+              </FormControl>
+              <Label
+                htmlFor="adult"
+                className="text-sm font-normal text-rose-100"
+              >
+                I confirm that I am at least 18 years old
+              </Label>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="agreeTerms"
+          render={({ field }) => (
+            <FormItem className="flex items-start space-x-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked)}
+                  className="mt-1 border-rose-500/30 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
+                />
+              </FormControl>
+              <Label
+                htmlFor="terms"
+                className="text-sm font-normal text-rose-100"
+              >
+                I agree to the{' '}
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-rose-500 hover:text-rose-400"
+                  type="button"
+                >
+                  Terms of Service
+                </Button>{' '}
+                and{' '}
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-rose-500 hover:text-rose-400"
+                  type="button"
+                >
+                  Privacy Policy
+                </Button>
+              </Label>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 shadow-glow-sm"
+          disabled={!form.watch('agreeTerms') || !form.watch('isAdult')}
+        >
+          Create Account
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-rose-400 hover:text-rose-300"
+          onClick={() => setShowEmailForm(false)}
+        >
+          Go Back
         </Button>
       </form>
     </Form>
