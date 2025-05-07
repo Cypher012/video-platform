@@ -12,6 +12,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -22,7 +23,8 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
-  accountType   String?
+  accountType   String? @default("client")
+  onboarded     Boolean  @default(false)
   sessions      Session[]
   accounts      Account[]
 

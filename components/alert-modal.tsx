@@ -19,7 +19,7 @@ export function ErrorAlert({
     >
       <Alert
         variant="destructive"
-        className="animate-in fade-in relative my-4 flex items-center gap-3 rounded-md border border-red-400 bg-red-200 p-4 text-sm text-red-900 shadow-sm"
+        className="animate-in fade-in relative my-4 flex items-center gap-3 rounded-md border border-red-400 bg-slate-900 p-4 text-sm text-red-900 shadow-sm"
       >
         <AlertTriangle className="h-6 w-6 text-red-600" />
         <AlertDescription className="font-semibold pr-6">

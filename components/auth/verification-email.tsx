@@ -14,24 +14,57 @@ import { Label } from '@/components/ui/label';
 import { Flame } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSignupStore } from '@/store/signup-store';
+import { verifyUserAccount } from '@/lib/actions/auth-action';
+import { useRouter } from 'next/navigation';  
 
 export function VerificationEmailModal() {
   const [verificationCode, setVerificationCode] = useState('');
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const {
-    closeVerificationModal,
     verificationModal,
     email,
     setEmail,
     setVerificationModal,
+    password,
+    setPassword,
   } = useSignupStore();
 
-  const handleVerificationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+
+  const handleVerificationSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    setIsPending(true);
     e.preventDefault();
+    try {
+      const { success, errorMessage } = await verifyUserAccount({
+        email,
+        otp: verificationCode,
+        password,
+      });
+      if (success) {
+        setVerificationModal(false);
+        setEmail('');
+        setPassword('');
+        router.push('/onboarding/role-selection');
+      } else {
+        console.log('verification-email.tsx', errorMessage);
+      }
+    } catch (error) {
+      console.error('Error during verification:', error);
+      // You might want to show this error to the user
+      setError('Failed to verify email. Please try again.');
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const resetForm = () => {
     setVerificationCode('');
     setVerificationModal(false);
+    setEmail('');
+    setPassword('');
   };
 
   useEffect(() => {
@@ -53,6 +86,9 @@ export function VerificationEmailModal() {
               We've sent a verification code to {email}
             </DialogDescription>
           </DialogHeader>
+          {error && (
+            <div className="text-center text-red-500 mb-4">{error}</div>
+          )}
           <form onSubmit={handleVerificationSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label
@@ -68,14 +104,20 @@ export function VerificationEmailModal() {
                 onChange={(e) => setVerificationCode(e.target.value)}
                 className="text-center text-lg tracking-widest bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
                 maxLength={6}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 required
               />
             </div>
             <Button
               type="submit"
+              disabled={isPending}
+
               className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 shadow-glow-sm"
             >
-              Verify Account
+              {isPending ? 'Verifying...' : 'Verify Account'}
             </Button>
             <div className="text-center text-sm text-rose-100">
               Didn't receive a code?{' '}

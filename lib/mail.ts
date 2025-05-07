@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
+import handlebars from 'handlebars';
 
 export const mailer = nodemailer.createTransport({
   host: process.env.MAIL_SERVER,
@@ -10,11 +11,12 @@ export const mailer = nodemailer.createTransport({
     pass: process.env.MAIL_PASSWORD,
   },
 });
+
 interface EmailOptions {
   to: string;
   subject: string;
   templateName: string;
-  variables?: Record<string, string>;
+  variables?: Record<string, any>;
 }
 
 export async function sendEmail({
@@ -25,26 +27,20 @@ export async function sendEmail({
 }: EmailOptions) {
   const templatePath = path.join(
     process.cwd(),
-    '/app/templates',
+    'templates',
     `${templateName}.html`
   );
-  console.log(templatePath);
 
   if (!fs.existsSync(templatePath)) {
     throw new Error(`Template not found: ${templatePath}`);
   }
 
-  let html = fs.readFileSync(templatePath, 'utf-8');
-
-  // Simple variable replacement: {{varName}}
-  if (variables) {
-    for (const [key, value] of Object.entries(variables)) {
-      html = html.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), value);
-    }
-  }
+  const source = fs.readFileSync(templatePath, 'utf-8');
+  const template = handlebars.compile(source);
+  const html = template(variables || {});
 
   await mailer.sendMail({
-    from: `${process.env.FROM_NAME}`,
+    from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_USER}>`,
     to,
     subject,
     html,

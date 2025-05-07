@@ -1,10 +1,10 @@
 'use server';
 
-import { APIError } from 'better-auth/api';
-import { auth } from '../auth';
+import { APIError, error } from 'better-auth/api';
+import { auth } from '../auth/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { signupSchema } from '@/lib/validations/auth';
+import { SignupInput, LoginInput } from '@/lib/validations/auth';
 
 export interface State {
   success: boolean;
@@ -13,60 +13,38 @@ export interface State {
     name?: string[];
     email?: string[];
     password?: string[];
-    accountType?: string[];
     isAdult?: string[];
     agreeTerms?: string[];
   };
 }
 
-export async function signUp(prevState: State, formData: FormData) {
-  const { name, email, password } = Object.fromEntries(formData) as unknown as {
-    name: string;
-    email: string;
-    password: string;
-  };
-
-  const accountType = formData.get('accountType')?.toString();
-  const isAdult = formData.get('isAdult') === 'true'; // checkbox
-  const agreeTerms = formData.get('agreeTerms') === 'true'; // checkbox
-  console.log({ name, email, password, accountType, isAdult, agreeTerms });
-
-  const validatedFields = signupSchema.safeParse({
-    name,
-    email,
-    password,
-    accountType,
-    isAdult,
-    agreeTerms,
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errorMessage: 'Validation failed',
-      validationErrors: validatedFields.error.flatten().fieldErrors,
-      success: false,
-    };
-  }
-
+export async function signUp({
+  name,
+  email,
+  password,
+  isAdult,
+  agreeTerms,
+}: SignupInput) {
+  console.log("signUp function called");
   try {
-    if (!accountType) {
-      return { errorMessage: 'Account type is required', success: false };
-    }
     await auth.api.signUpEmail({
       body: {
         name,
         email,
         password,
-        accountType,
+        accountType: 'client',
+        onboarded: false,
       },
     });
+    console.log({name, email, password})
   } catch (error) {
     if (error instanceof APIError) {
+      console.log("Error signing up", error)
       switch (error.status) {
         case 'UNPROCESSABLE_ENTITY':
           return { errorMessage: 'User already exists', success: false };
         case 'BAD_REQUEST':
-          return { errorMessage: 'Invalid email or password', success: false };
+          return { errorMessage: 'User already exists', success: false };
         default:
           return { errorMessage: 'An unknown error occurred', success: false };
       }
@@ -74,36 +52,45 @@ export async function signUp(prevState: State, formData: FormData) {
     console.error('Error signing up', error);
     return { errorMessage: 'An error occurred', success: false };
   }
+
+  const verify =  await auth.api.sendVerificationOTP({
+    body: {
+      email: email,
+      type: 'email-verification',
+    },
+  });
+
+
   return { success: true, errorMessage: '' };
 }
 
-export async function signIn(prevState: State, formData: FormData) {
-  const { email, password } = Object.fromEntries(formData) as {
-    email: string;
-    password: string;
-  };
-
+export async function signIn({ email, password }: LoginInput) {
+  console.log("function signIn called");
   try {
-    await auth.api.signInEmail({
+    const res = await auth.api.signInEmail({
       body: {
         email,
         password,
       },
     });
+
+    console.log("res:", res)
+    console.log("user signed in, redirecting to dashboard");
+    return { success: true, errorMessage: '' };
   } catch (error) {
     if (error instanceof APIError) {
       console.error('Error signing in', error);
       switch (error.status) {
         case 'UNAUTHORIZED':
-          return { errorMessage: 'Invalid email or password' };
+          return { success: false, errorMessage: 'Invalid email or password' };
         case 'BAD_REQUEST':
-          return { errorMessage: 'Invalid email or password' };
+          return { success: false, errorMessage: 'Invalid email or password' };
         default:
-          return { errorMessage: 'An unknown error occurred' };
+          return { success: false, errorMessage: 'An unknown error occurred' };
       }
     }
+    return { success: false, errorMessage: 'An unknown error occurred' };
   }
-  redirect('/dashboard');
 }
 
 export async function findUserByEmail(email: string) {
@@ -111,4 +98,39 @@ export async function findUserByEmail(email: string) {
     where: { email },
   });
   return user;
+}
+
+export async function verifyUserAccount({
+  email,
+  otp,
+  password,
+}: {
+  email: string;
+  otp: string;
+  password: string;
+}) {
+      
+  const verify = await auth.api.verifyEmailOTP({
+    body: {
+      email,
+      otp,
+    },
+  });
+
+  console.log("verify:", verify)
+
+  if (verify.status === false) {
+    return { errorMessage: 'Invalid OTP' };
+  }
+
+  const res = await auth.api.signInEmail({
+    body: {
+      email,
+      password,
+    },  
+  });
+
+ 
+
+  return { success: true, errorMessage: '' };
 }

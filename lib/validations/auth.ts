@@ -23,7 +23,6 @@ export const signupSchema = z.object({
       passwordRegex,
       'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
     ),
-  accountType: z.enum(['client', 'performer']),
   isAdult: z.boolean().refine((val) => val === true, {
     message: "You must confirm that you're 18+",
   }),

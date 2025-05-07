@@ -7,6 +7,7 @@ CREATE TABLE "user" (
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "accountType" TEXT DEFAULT 'client',
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );

@@ -26,7 +26,7 @@ export function SignupModal() {
           Join Now
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-black/95 border border-rose-900/50 text-white">
+      <DialogContent className="sm:max-w-[450px] h-[700px] overflow-y-auto bg-black/95 border border-rose-900/50 text-white">
         <SignupContent closeModal={() => setIsOpen(false)} />
       </DialogContent>
     </Dialog>

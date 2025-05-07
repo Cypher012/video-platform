@@ -1,8 +1,10 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { prisma } from './prisma';
+import { prisma } from '../prisma';
 import { nextCookies } from 'better-auth/next-js';
-import { sendEmail } from './mail';
+import { sendEmail } from '../mail'; 
+import { emailOTP } from 'better-auth/plugins';
+import { sendOTPEmail } from './auth-utils';
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -34,23 +36,19 @@ export const auth = betterAuth({
       accountType: {
         type: 'string',
         required: true,
+        defaultValue: 'client',
+      },
+      onboarded: {
+        type: 'boolean',
+        required: true,
+        defaultValue: false,
       },
     },
   },
-  emailVerification: {
-    sendOnSignUp: true, // auto-send email on sign up
-    autoSignInAfterVerification: true, // auto sign-in after email is verified
-    sendVerificationEmail: async ({ user, url, token }, req) => {
-      await sendEmail({
-        to: user.email,
-        subject: 'Verify your email address',
-        templateName: 'verification',
-        variables: {
-          VERIFICATION_LINK: url,
-        },
-      });
-    },
-  },
-
-  plugins: [nextCookies()],
+  plugins: [
+    emailOTP({
+      sendVerificationOTP: sendOTPEmail,
+    }),
+    nextCookies()
+  ],
 });

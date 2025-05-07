@@ -1200,6 +1200,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     accountType: string | null
+    onboarded: boolean | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1211,6 +1212,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     accountType: string | null
+    onboarded: boolean | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1222,6 +1224,7 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     accountType: number
+    onboarded: number
     _all: number
   }
 
@@ -1235,6 +1238,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     accountType?: true
+    onboarded?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1246,6 +1250,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     accountType?: true
+    onboarded?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1257,6 +1262,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     accountType?: true
+    onboarded?: true
     _all?: true
   }
 
@@ -1341,6 +1347,7 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     accountType: string | null
+    onboarded: boolean
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1369,6 +1376,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     accountType?: boolean
+    onboarded?: boolean
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1383,6 +1391,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     accountType?: boolean
+    onboarded?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1394,6 +1403,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     accountType?: boolean
+    onboarded?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1405,9 +1415,10 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     accountType?: boolean
+    onboarded?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "accountType", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "accountType" | "onboarded", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
@@ -1431,6 +1442,7 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       accountType: string | null
+      onboarded: boolean
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1864,6 +1876,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
     readonly accountType: FieldRef<"User", 'String'>
+    readonly onboarded: FieldRef<"User", 'Boolean'>
   }
     
 
@@ -5607,7 +5620,8 @@ export namespace Prisma {
     image: 'image',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    accountType: 'accountType'
+    accountType: 'accountType',
+    onboarded: 'onboarded'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -5751,6 +5765,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     accountType?: StringNullableFilter<"User"> | string | null
+    onboarded?: BoolFilter<"User"> | boolean
     sessions?: SessionListRelationFilter
     accounts?: AccountListRelationFilter
   }
@@ -5764,6 +5779,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accountType?: SortOrderInput | SortOrder
+    onboarded?: SortOrder
     sessions?: SessionOrderByRelationAggregateInput
     accounts?: AccountOrderByRelationAggregateInput
   }
@@ -5780,6 +5796,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     accountType?: StringNullableFilter<"User"> | string | null
+    onboarded?: BoolFilter<"User"> | boolean
     sessions?: SessionListRelationFilter
     accounts?: AccountListRelationFilter
   }, "id" | "email">
@@ -5793,6 +5810,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accountType?: SortOrderInput | SortOrder
+    onboarded?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -5810,6 +5828,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     accountType?: StringNullableWithAggregatesFilter<"User"> | string | null
+    onboarded?: BoolWithAggregatesFilter<"User"> | boolean
   }
 
   export type SessionWhereInput = {
@@ -6043,6 +6062,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     sessions?: SessionCreateNestedManyWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
   }
@@ -6056,6 +6076,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
@@ -6069,6 +6090,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUpdateManyWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
   }
@@ -6082,6 +6104,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -6095,6 +6118,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
   }
 
   export type UserUpdateManyMutationInput = {
@@ -6106,6 +6130,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -6117,6 +6142,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type SessionCreateInput = {
@@ -6449,6 +6475,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accountType?: SortOrder
+    onboarded?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -6460,6 +6487,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accountType?: SortOrder
+    onboarded?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -6471,6 +6499,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     accountType?: SortOrder
+    onboarded?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -7092,6 +7121,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     accounts?: AccountCreateNestedManyWithoutUserInput
   }
 
@@ -7104,6 +7134,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -7132,6 +7163,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUpdateManyWithoutUserNestedInput
   }
 
@@ -7144,6 +7176,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -7156,6 +7189,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     sessions?: SessionCreateNestedManyWithoutUserInput
   }
 
@@ -7168,6 +7202,7 @@ export namespace Prisma {
     createdAt: Date | string
     updatedAt: Date | string
     accountType?: string | null
+    onboarded?: boolean
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -7196,6 +7231,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUpdateManyWithoutUserNestedInput
   }
 
@@ -7208,6 +7244,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accountType?: NullableStringFieldUpdateOperationsInput | string | null
+    onboarded?: BoolFieldUpdateOperationsInput | boolean
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 

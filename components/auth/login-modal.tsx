@@ -19,21 +19,52 @@ import { Eye, EyeOff, Mail, Flame } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ForgotPasswordModal } from './forgot-password-modal';
 import { Icons } from '@/components/icon';
+import { LoginInput, loginSchema } from '@/lib/validations/auth';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signIn } from '@/lib/actions/auth-action';
+import { useRouter } from 'next/navigation';
 
 export function LoginModal() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic here
-    console.log({ email, password, rememberMe });
-    // Close the modal after successful login
-    setIsOpen(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    watch,
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginInput> = async (data: LoginInput) => {
+    setIsPending(true);
+    try {
+      const { success, errorMessage } = await signIn(data);
+      if (success) {
+        setIsOpen(false);
+        router.push('/dashboard');
+      } else {
+        setError('email', {
+          type: 'server',
+          message: errorMessage,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -109,7 +140,7 @@ export function LoginModal() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -123,8 +154,7 @@ export function LoginModal() {
                     id="email"
                     type="email"
                     placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...register('email')}
                     className="pl-10 bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
                     required
                   />
@@ -144,8 +174,7 @@ export function LoginModal() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    {...register('password')}
                     className="bg-rose-950/20 border-rose-500/30 text-white focus-visible:ring-rose-500 focus-visible:border-rose-500"
                     required
                   />
@@ -167,23 +196,7 @@ export function LoginModal() {
                   </Button>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) =>
-                      setRememberMe(checked as boolean)
-                    }
-                    className="border-rose-500/30 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
-                  />
-                  <Label
-                    htmlFor="remember"
-                    className="text-sm font-normal text-rose-100"
-                  >
-                    Remember me
-                  </Label>
-                </div>
+              <div className="flex items-center justify-end">
                 <Button
                   variant="link"
                   className="px-0 text-rose-500 h-auto p-0 hover:text-rose-400"
@@ -195,9 +208,10 @@ export function LoginModal() {
               </div>
               <Button
                 type="submit"
+                disabled={isPending || !watch('email') || !watch('password')}
                 className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 shadow-glow-sm"
               >
-                Login
+                {isPending ? 'Logging in...' : 'Login'}
               </Button>
             </form>
             <div className="text-center text-sm text-rose-100">

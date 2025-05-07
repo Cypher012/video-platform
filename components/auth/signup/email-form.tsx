@@ -23,15 +23,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Mail, User, Eye, EyeOff } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSignupStore } from '@/store/signup-store';
+import { ErrorAlert } from '@/components/alert-modal';
 
 interface EmailFormProps {
   closeEmailForm: (success: boolean) => void;
@@ -40,64 +34,76 @@ interface EmailFormProps {
 
 export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const { setVerificationModal, verificationModal, setEmail } =
-    useSignupStore();
-  const initialState: State = {
-    errorMessage: '',
-    validationErrors: {},
-    success: false,
-  };
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const { setVerificationModal, verificationModal, setEmail, setPassword } = useSignupStore();
 
-  const [state, formAction, isPending] = useActionState(signUp, initialState);
 
+  const [isPending, setIsPending] = useState(false);
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: '',
       email: '',
       password: '',
-      accountType: undefined,
       isAdult: false,
       agreeTerms: false,
     },
   });
 
-  // Optional: Handle server error display (if returned from server action)
-  useEffect(() => {
-    console.log(state);
-    if (state?.errorMessage) {
-      form.setError('email', {
-        type: 'server',
-        message: state.errorMessage,
-      });
+  const onSubmit = async (data: SignupInput) => {
+    setIsPending(true);
+    try {
+      const { success, errorMessage } = await signUp(data);
+      console.log("signup form", {success, errorMessage})
+      if (success) {
+        setEmail(data.email);
+        setPassword(data.password);
+        closeEmailForm(true);
+        closeModal();
+        setVerificationModal(true);
+      } else {
+        form.setError('email', {
+          type: 'server',
+          message: errorMessage,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsPending(false);
     }
-  }, [state, form]);
+  };
+
+  const errorPriority = ['email', 'password', 'name'] as const;
 
   useEffect(() => {
-    console.log('verificationModal', verificationModal);
-    if (state.success) {
-      setEmail(form.getValues('email'));
-      closeEmailForm(true);
-      closeModal();
-      setVerificationModal(true);
-    }
-  }, [state.success, closeEmailForm, setVerificationModal]);
+    const errors = form.formState.errors;
 
-  useEffect(() => {
-    console.log('Dialog should open:', verificationModal);
-  }, [verificationModal]);
+    for (const field of errorPriority) {
+      const error = errors[field];
+      if (error) {
+        setLocalError(error.message);
+        return;
+      }
+    }
+
+    setLocalError(''); // No errors
+  }, [form.formState.errors]);
 
   const disabled =
     !form.watch('agreeTerms') ||
     !form.watch('isAdult') ||
-    isPending ||
-    !form.watch('accountType') ||
     !form.watch('name') ||
+    isPending ||
     !form.watch('email') ||
     !form.watch('password');
   return (
     <Form {...form}>
-      <form action={formAction} className="space-y-4 pt-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+        {localError && (
+          <ErrorAlert message={localError} onClose={() => setLocalError('')} />
+        )}
+        {/* Display Name */}
         <FormField
           control={form.control}
           name="name"
@@ -120,11 +126,10 @@ export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
                   />
                 </div>
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
-
+        {/* Email */}
         <FormField
           control={form.control}
           name="email"
@@ -148,11 +153,11 @@ export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
                   />
                 </div>
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
 
+        {/* Password */}
         <FormField
           control={form.control}
           name="password"
@@ -195,52 +200,16 @@ export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
                 Password must be at least 8 characters with a number and special
                 character
               </p>
-              <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="accountType"
-          render={({ field }) => (
-            <FormItem>
-              <Label
-                htmlFor="accountType"
-                className="text-sm font-medium text-rose-100"
-              >
-                Account Type
-              </Label>
-              <Input
-                type="hidden"
-                name="accountType"
-                value={field.value ?? ''}
-              />
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="bg-rose-950/20 border-rose-500/30 text-white focus:ring-rose-500">
-                    <SelectValue placeholder="Select account type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-black border border-rose-500/30">
-                  <SelectItem value="client" className="text-rose-100">
-                    Client - I want to book sessions
-                  </SelectItem>
-                  <SelectItem value="performer" className="text-rose-100">
-                    Performer - I want to offer services
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+        {/* IsAdult */}
         <FormField
           control={form.control}
           name="isAdult"
           render={({ field }) => (
-            <FormItem className="flex items-start space-x-2">
+            <FormItem className="flex items-center space-x-2">
               <FormControl>
                 <Checkbox
                   checked={field.value}
@@ -257,18 +226,18 @@ export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
               <input
                 type="hidden"
                 name="isAdult"
+                id={'adult'}
                 value={field.value ? 'true' : ''}
               />
-              <FormMessage />
             </FormItem>
           )}
         />
-
+        {/* Agreed Terms */}
         <FormField
           control={form.control}
           name="agreeTerms"
           render={({ field }) => (
-            <FormItem className="flex items-start space-x-2">
+            <FormItem className="flex items-center space-x-2">
               <FormControl>
                 <Checkbox
                   checked={field.value}
@@ -299,20 +268,20 @@ export function EmailForm({ closeEmailForm, closeModal }: EmailFormProps) {
               </Label>
               <input
                 type="hidden"
+                id={'terms'}
                 name="agreeTerms"
                 value={field.value ? 'true' : ''}
               />
-              <FormMessage />
             </FormItem>
           )}
         />
 
         <Button
           type="submit"
-          className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 shadow-glow-sm"
+          className="w-full bg-rose-600 hover:bg-rose-700 text-white"
           disabled={disabled}
         >
-          {isPending ? 'Creating account...' : 'Create Account'}
+          {isPending ? 'Creating account...' : 'Create account'}
         </Button>
         <Button
           type="button"
